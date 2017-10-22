@@ -2,23 +2,7 @@ import tensorflow as tf
 
 from model import Model
 from tools import *
-
-
-class Config(object):
-    """Holds model hyperparams and data information.
-
-    The config class is used to store various hyperparameters and dataset
-    information parameters. Model objects are passed a Config() object at
-    instantiation.
-    """
-    row_size = 32
-    column_size = 32
-    channel_size = 3
-    n_classes = 10
-
-    dropout = 0.5
-    batch_size = 16
-    lr = 0.01
+from config import *
 
 
 class VggModel(Model):
@@ -171,8 +155,8 @@ class VggModel(Model):
         loss_vector = tf.nn.softmax_cross_entropy_with_logits(
             labels=self.label_placeholders,
             logits=pred)
-        loss = tf.reduce_mean(loss_vector * self.weight_placeholders)
-        #loss = tf.reduce_mean(loss_vector)
+        # loss = tf.reduce_mean(loss_vector * self.weight_placeholders)
+        loss = tf.reduce_mean(loss_vector)
         return loss, loss_vector
 
     def add_training_op(self, loss):

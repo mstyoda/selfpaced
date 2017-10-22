@@ -12,35 +12,6 @@ def normal_init():
     return _normal_initializer
 
 
-def xavier_weight_init():
-    """Returns function that creates random tensor.
-
-    The specified function will take in a shape (tuple or 1-d array) and
-    returns a random tensor of the specified shape drawn from the
-    Xavier initialization distribution.
-
-    Hint: You might find tf.random_uniform useful.
-    """
-    def _xavier_initializer(shape, **kwargs):
-        """Defines an initializer for the Xavier distribution.
-        Specifically, the output should be sampled uniformly from [-epsilon, epsilon] where
-            epsilon = sqrt(6) / <sum of the sizes of shape's dimensions>
-        e.g., if shape = (2, 3), epsilon = sqrt(6 / (2 + 3))
-
-        This function will be used as a variable initializer.
-
-        Args:
-            shape: Tuple or 1-d array that species the dimensions of the requested tensor.
-        Returns:
-            out: tf.Tensor of specified shape sampled from the Xavier distribution.
-        """
-        epsilon = (6. / float(sum(shape))) ** 0.5
-        out = tf.Variable(tf.random_normal(shape, -epsilon, epsilon))
-        return out
-    # Returns defined initializer function.
-    return _xavier_initializer
-
-
 def conv2D(x, filter, bias):
     return tf.nn.relu(
                 tf.nn.bias_add(
@@ -51,7 +22,9 @@ def conv2D(x, filter, bias):
 
 
 def maxpool(x):
-    return tf.nn.lrn(tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME'))
+    return tf.nn.lrn(
+                tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+            )
 
 
 def flatten(x):
@@ -198,7 +171,7 @@ def mini_batches(data, batch_size):
 
         start = i * batch_size
 
-        for j in range(start, start + batch_size):
+        for j in range(start, min(v.size, start + batch_size)):
             x_batch.append(x[indices[j]])
             v_batch.append(v[indices[j]])
             y_batch.append(y[indices[j]])

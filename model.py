@@ -157,11 +157,12 @@ class Model(object):
             accuracy = self.get_accuracy(sess=sess, inputs=train_x, labels=train_y)
             epoch_loss = float(loss)
             prog.update(i + 1, [("train loss", loss), ("train accuracy", accuracy)])
+
         '''
-        for i in range(0, 100):
+        for i in range(0, 100000):
             trainx, trainv, trainy = all_batches[0]
             loss = self.train_on_batch(sess, trainx, trainv, trainy)
-            print 'i = ',i, 'loss = ',loss
+            print 'i = ', i, 'loss = ', loss
         '''
         return epoch_loss
 
@@ -185,7 +186,7 @@ class Model(object):
 
         inputs, labels = train_examples
         labels = to_onehot(labels=labels)
-        weight = tf.ones(shape=labels.shape[0], dtype=tf.float32)
+        weight = tf.ones(shape=labels.shape[0], dtype=tf.float64)
         feed = self.create_feed_dict(inputs_batch=inputs, weight_batch=weight, labels_batch=labels)
         L = sess.run(self.loss_vector, feed_dict=feed)
         return L

@@ -2,6 +2,8 @@ import tensorflow as tf
 
 from model import Model
 from tools import *
+from config import *
+
 
 class CnnModel(Model):
 
@@ -37,7 +39,7 @@ class CnnModel(Model):
         """
         x = self.input_placeholders
 
-        normal_initializer = tf.truncated_normal_initializer(stddev=0.1, dtype=tf.float32)
+        normal_initializer = tf.truncated_normal_initializer(stddev=0.01, dtype=tf.float32)
 
         conv1_filter = tf.get_variable(name='conv1_filter', shape=[3, 3, 3, 64], initializer=normal_initializer)
         conv1_bias = tf.get_variable(name='conv1_bias', shape=[64], initializer=normal_initializer)
@@ -45,10 +47,10 @@ class CnnModel(Model):
         conv2_filter = tf.get_variable(name='conv2_filter', shape=[3, 3, 64, 128], initializer=normal_initializer)
         conv2_bias = tf.get_variable(name='conv2_bias', shape=[128], initializer=normal_initializer)
 
-        fc1 = tf.get_variable(name='fc1', shape=[8192, 1024], initializer=normal_initializer)
-        fc1_bias = tf.get_variable(name='fc1_bias', shape=[1024], initializer=normal_initializer)
+        fc1 = tf.get_variable(name='fc1', shape=[8192, 4096], initializer=normal_initializer)
+        fc1_bias = tf.get_variable(name='fc1_bias', shape=[4096], initializer=normal_initializer)
 
-        fc2 = tf.get_variable(name='fc2', shape=[1024, 10], initializer=normal_initializer)
+        fc2 = tf.get_variable(name='fc2', shape=[4096, 10], initializer=normal_initializer)
         fc2_bias = tf.get_variable(name='fc2_bias', shape=[10], initializer=normal_initializer)
 
         conv1 = conv2D(x=x, filter=conv1_filter, bias=conv1_bias)
@@ -62,22 +64,26 @@ class CnnModel(Model):
 
     def add_loss_op(self, pred):
         """
-            loss in self-paced:
-               Loss = (1/batch_size) sum_{i} v_i L(y_i,pred_i)
+            Args:
+                pred : pred tensor of shape (N_batch,N_class)
+            Return:
+                loss: loss in self-paced:
+                    loss = (1/batch_size) sum_{i} v_i L(y_i,pred_i)
+                loss_vector: origin softmax-ce loss of shape (N_batch)
         """
         loss_vector = tf.nn.softmax_cross_entropy_with_logits(
             labels=self.label_placeholders,
             logits=pred)
         #loss = tf.reduce_mean(loss_vector * self.weight_placeholders)
         loss = tf.reduce_mean(loss_vector)
-        return loss
+        return loss, loss_vector
 
     def add_training_op(self, loss):
 
-        train_op = tf.train.AdadeltaOptimizer(Config.lr).minimize(loss)
+        train_op = tf.train.AdamOptimizer(Config.lr).minimize(loss)
         return train_op
 
     def __init__(self, config):
         self.config = config
-        self.save_path = 'data/cnn_model.weights'
+        self.save_path = 'saveModel/cnn_model.weights'
         self.build()

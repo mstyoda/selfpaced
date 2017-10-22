@@ -16,7 +16,7 @@ def argminW(inputs, v, labels):
     with tf.Graph().as_default():
         print "Building model...",
         start = time.time()
-        W = VggModel(Config)
+        W = CnnModel(Config)
         print "took {:.2f} seconds\n".format(time.time() - start)
 
         train_examples = (inputs, v, labels)
