@@ -70,7 +70,7 @@ class VggModel(Model):
             - conv5_4 : 2 * 2 * 512
             - maxpool
 
-            - fc6 : 2048 * 4096
+            - fc6 : 512 * 4096
             - fc7 : 4096 * 4096
             - fc8 : 4096 * 4096
         """
@@ -161,15 +161,19 @@ class VggModel(Model):
 
     def add_loss_op(self, pred):
         """
-            loss in self-paced:
-               Loss = (1/batch_size) sum_{i} v_i L(y_i,pred_i)
+            Args:
+                pred : pred tensor of shape (N_batch,N_class)
+            Return:
+                loss: loss in self-paced:
+                    loss = (1/batch_size) sum_{i} v_i L(y_i,pred_i)
+                loss_vector: origin softmax-ce loss of shape (N_batch)
         """
         loss_vector = tf.nn.softmax_cross_entropy_with_logits(
             labels=self.label_placeholders,
             logits=pred)
-        #loss = tf.reduce_mean(loss_vector * self.weight_placeholders)
-        loss = tf.reduce_mean(loss_vector)
-        return loss
+        loss = tf.reduce_mean(loss_vector * self.weight_placeholders)
+        #loss = tf.reduce_mean(loss_vector)
+        return loss, loss_vector
 
     def add_training_op(self, loss):
         train_op = tf.train.AdadeltaOptimizer(Config.lr).minimize(loss)
@@ -177,5 +181,5 @@ class VggModel(Model):
 
     def __init__(self, config):
         self.config = config
-        self.save_path = 'data/vgg_model.weights'
+        self.save_path = 'saveModel/vgg_model.weights'
         self.build()

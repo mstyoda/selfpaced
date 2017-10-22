@@ -164,6 +164,18 @@ class Progbar(object):
         self.update(self.seen_so_far+n, values)
 
 
+def to_onehot(labels):
+    """
+    Args:
+        labels: labels of shape(n_train)
+    Return:
+        one_hot: one_hot vector of shape (n_train, n_class)
+    """
+    n_class = 10
+    one_hot = np.zeros((labels.size, n_class))
+    one_hot[np.arange(labels.size), labels] = 1
+    return one_hot
+
 
 def mini_batches(data, batch_size):
     """
@@ -173,11 +185,7 @@ def mini_batches(data, batch_size):
     """
 
     (x, v, y) = data
-    n_class = 10
-    one_hot = np.zeros((y.size, n_class))
-    one_hot[np.arange(y.size), y] = 1
-    y = one_hot
-
+    y = to_onehot(labels=y)
     indices = np.arange(v.size)
     np.random.shuffle(indices)
 

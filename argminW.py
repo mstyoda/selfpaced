@@ -2,13 +2,16 @@ from vggModel import *
 from cnnModel import *
 from reader import *
 
+
 def argminW(inputs, v, labels):
     """
     Args:
         v: weight vector defined in "Self-paced Convolutional Neural Networks"
         inputs: np.ndarray of shape(n_train, row_size, column_size)
         labels: np.ndarray of shape(n_train)
-    Return: Nothing but save DNN model weight in "data/$Name$_model.weights"
+
+    Return:
+        W: DNN model (the weights has been saved in 'saveModel/$Name$_Model.weights')
     """
     with tf.Graph().as_default():
         print "Building model...",
@@ -30,6 +33,7 @@ def argminW(inputs, v, labels):
             W.fit(session, train_examples)
             saver.save(sess=session, save_path=W.save_path)
         tf.Session().close()
+    return W
 
 if __name__ == '__main__':
     (x, y) = read_cifar10()

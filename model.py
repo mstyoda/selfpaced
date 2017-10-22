@@ -1,6 +1,7 @@
 from tools import Progbar
 from tools import mini_batches
-
+from tools import to_onehot
+import tensorflow as tf
 
 class Model(object):
     """Abstracts a Tensorflow graph for a learning task.
@@ -148,8 +149,12 @@ class Model(object):
         print xx.dtype
 
         for i, (train_x, train_v, train_y) in enumerate(all_batches):
-            loss = self.train_on_batch(sess, train_x, train_v, train_y)
-            accuracy = self.get_accuracy(sess, train_x, train_y)
+            loss = self.train_on_batch(sess=sess,
+                                       inputs_batch=train_x,
+                                       weight_batch=train_v,
+                                       labels_batch=train_y
+                                       )
+            accuracy = self.get_accuracy(sess=sess, inputs=train_x, labels=train_y)
             epoch_loss = float(loss)
             prog.update(i + 1, [("train loss", loss), ("train accuracy", accuracy)])
         '''
@@ -167,8 +172,26 @@ class Model(object):
             epoch += 1
         print 'Fit successful!'
 
+    def get_L(self, sess, train_examples):
+        """
+        Args:
+            sess: session of tensorflow
+            train_examples: (inputs, labels)
+                inputs: of shape (n_train, n_rows, n_column)
+                labels: of shape (n_train)
+        Return:
+            L: of shape(n_train), represent the origin loss_vector of train_examples
+        """
+
+        inputs, labels = train_examples
+        labels = to_onehot(labels=labels)
+        weight = tf.ones(shape=labels.shape[0], dtype=tf.float32)
+        feed = self.create_feed_dict(inputs_batch=inputs, weight_batch=weight, labels_batch=labels)
+        L = sess.run(self.loss_vector, feed_dict=feed)
+        return L
+
     def build(self):
         self.add_placeholders()
         self.pred, self.pred_with_softmax = self.add_prediction_op()
-        self.loss = self.add_loss_op(self.pred)
-        self.train_op = self.add_training_op(self.loss)
+        self.loss, self.loss_vector = self.add_loss_op(pred=self.pred)
+        self.train_op = self.add_training_op(loss=self.loss)
